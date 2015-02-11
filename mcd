@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Wed Feb 11 21:13:34 PHT 2015 / Wed Feb 11 13:13:34 UTC 2015               #
+#: Last Edit       : Thu Feb 12 01:13:42 PHT 2015 / Wed Feb 11 17:13:42 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.0.2                                                                     #
+#: Version         : 1.0.3                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A function that list a menu of recently visited directories.              #
 #: Options         : NONE                                                                      #
@@ -15,17 +15,19 @@
 mcd() {
   shopt -s extglob
 
-  unset dir dirst Dirs Dir f i prompts
-  local dir dirst Dirs Dir f i prompts
+  local dir dirst Dirs Dir f gb i reset prompts
+
+  gb=$(tput setaf 2 && tput bold)
+  reset=$(tput sgr0)
+
+  dirst=$(pwd -P; printf x)
+  dirst=${dirst%$'\nx'}
 
   mapfile -t Dir < <(
     awk '!seen[$0]++' < <(
       dirs -l -p
     )
   )
-
-  dirst=$(pwd -P; printf x)
-  dirst=${dirst%$'\nx'}
 
   for f in "${Dir[@]}"; do
     [[ $f = @($PWD|$dirst) ]] && continue
@@ -41,8 +43,10 @@ mcd() {
       ;;
   esac
 
-  printf -v prompts '\n%s' "(1 to ${#Dirs[@]}) ==> "
+  printf -v prompts '\n%s' "(${gb}1$reset to $gb${#Dirs[@]}$reset) ==> "
   clear
+
+  printf 'Current Location: %s\n' "$gb$PWD$reset"
   printf '%s\n' "${empty_line+""}"
   PS3=$prompts
 
@@ -50,25 +54,25 @@ mcd() {
     case $REPLY in
       [Qq]|[Qq][Uu][Ii][Tt]|${#Dirs[@]}|'')
          clear
-         printf 'Bye!%s\n'
+         printf 'Location not changed %s\n' "$gb$PWD$reset"
          return
          ;;
       *[!0-9]*)
          clear
-         printf 'Unknown response [%s]\n' "$REPLY" >&2
+         printf 'Unknown response [%s]\n' "$gb$REPLY$reset" >&2
          return 1
          ;;
     esac
 
    if (( REPLY > ${#Dirs[@]} || REPLY == 0 )); then
      clear
-     printf  '[%d] is out of range from [%d] to [%d] \n' "$REPLY" "1" "${#Dirs[@]}" >&2
+     printf '[%s] not in range from [%s] to [%s] \n' "$gb$REPLY$reset" "${gb}1$reset" "$gb${#Dirs[@]}$reset" >&2
      break
    fi
 
    if pushd >/dev/null "$dir"; then
      clear
-     printf 'Now in %s [%s]\n' directory "$PWD"
+     printf 'Now in %s %s\n' directory "$gb$PWD$reset"
      break
    fi
   done
