@@ -77,3 +77,6 @@ mcd() {
    fi
   done
 }
+
+#vim: set filetype=shell:
+#vim: set ft=shell:
