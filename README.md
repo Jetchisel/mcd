@@ -1,1 +1,19 @@
-README file for initgit.
+# mcd - A bash function that prints the recently visited directories.
+
+https://github.com/Jetchisel/mcd
+
+Copyright 2015 Jetchisel
+
+## Installation
+* git clone https://github.com/Jetchisel/mcd
+* cd mcd/
+* source mcd
+
+## Usage: A simple test run once you have sourced mcd.
+```
+for f in /*/; do cd "$f"; done
+
+mcd
+```
+##
+Dirstack must have some value/entry and pushd is the builtin utility that does that.
