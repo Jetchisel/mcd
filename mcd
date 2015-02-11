@@ -2,11 +2,11 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Wed Feb 11 19:05:39 PHT 2015 / Wed Feb 11 11:05:39 UTC 2015               #
+#: Last Edit       : Wed Feb 11 20:48:01 PHT 2015 / Wed Feb 11 12:48:01 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.0.0                                                                     #
+#: Version         : 1.0.1                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
-#: Description     : A function that list a menu of directories for ease of navigation.        #
+#: Description     : A function that list a menu of recently visited directories.              #
 #: Options         : NONE                                                                      #
 #: Home Page       :                                                                           #
 #: ExtComm         :                                                                           #
@@ -40,7 +40,7 @@ mcd() {
   esac
 
   printf -v prompts '\n%s' "(1 to ${#Dirs[@]}) ==> "
-
+  clear
   printf '%s\n' "${empty_line+""}"
   PS3=$prompts
 
@@ -48,6 +48,7 @@ mcd() {
     case $REPLY in
       [Qq]|[Qq][Uu][Ii][Tt]|${#Dirs[@]}|'')
          clear
+         printf 'Bye!%s\n'
          return
          ;;
       *[!0-9]*)
@@ -57,10 +58,15 @@ mcd() {
     esac
 
    if (( REPLY > ${#Dirs[@]} || REPLY == 0 )); then
-     echo "Out of range!" >&2
+     clear
+     printf  '[%d] is out of range from [%d] to [%d] \n' "$REPLY" "1" "${#Dirs[@]}" >&2
      break
    fi
 
-   pushd >/dev/null "$dir" && clear && echo "Now in $dir" && break
+   if pushd >/dev/null "$dir"; then
+     clear
+     printf 'Now in %s [%s]\n' directory "$PWD"
+     break
+   fi
   done
 }
