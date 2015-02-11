@@ -10,9 +10,12 @@ Copyright 2015 Jetchisel
 * source mcd
 
 ## Usage: A simple test run once you have sourced mcd.
+```shell
+for f in /*/; do [[ -x $f ]] && builtin pushd "$f" >/dev/null; done
 ```
-for f in /*/; do cd "$f"; done
 
+Now run mcd to see the lists of recently visited directories.
+```shell
 mcd
 ```
 ##
