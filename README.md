@@ -4,9 +4,13 @@ https://github.com/Jetchisel/mcd
 
 Copyright 2015 Jetchisel
 
+## Colored branch from Master.
+* A more colored (bling-bling) version.
+
 ## Installation
 * git clone https://github.com/Jetchisel/mcd
 * cd mcd/
+* git checkout -b Colored remotes/origin/Colored
 * source mcd
 
 ## Usage: A simple test run once you have sourced mcd.
