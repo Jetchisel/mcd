@@ -6,6 +6,7 @@ Copyright 2015 Jetchisel
 
 ## Installation
 * git clone https://github.com/Jetchisel/mcd
+* git checkout -b simple remotes/origin/simple
 * cd mcd/
 * source mcd
 
@@ -18,5 +19,14 @@ Now run mcd to see the lists of recently visited directories.
 ```shell
 mcd
 ```
+
+## Make permanent changes
+mcd needs to be sourced during interactive session. Put something like this in ~/.bashrc
+```shell
+[[ -s /path/to/mcd ]] && source /path/to/mcd
+```
+Change the **/path/to** with the absolute path where mcd is located.
+
 ##
 Dirstack must have some value/entry and pushd is the builtin utility that does that.
+The builtin dirs command holds the directory stack.
