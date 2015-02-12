@@ -2,7 +2,7 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Thu Feb 12 10:53:25 PHT 2015 / Thu Feb 12 02:53:25 UTC 2015               #
+#: Last Edit       : Fri Feb 13 06:21:42 PHT 2015 / Thu Feb 12 22:21:42 UTC 2015               #
 #: License         : GPLv3                                                                     #
 #: Version         : 1.0.4-Colored                                                             #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
@@ -44,7 +44,7 @@ mcd() {
      ;;
   esac
 
-  printf -v prompts '\n  %s' "$b[${gb}1${reset}-$gb$((${#Dirs[@]} + 1 ))$reset$b] ==>$reset "
+  printf -v prompts '\n %s' "$b[${gb}1${reset}-$gb$((${#Dirs[@]} + 1 ))$reset$b] ==>$reset "
   clear
 
   printf "\n  %s %s\n" "${yb}Current Location:$reset" "$bb$PWD$reset"
@@ -64,12 +64,13 @@ mcd() {
    Dirs=("${Dirs[@]}" "$reset${yb}Quit$reset")
   __Menu__ "${Dirs[@]}"
 
-  read -r -p "$prompts"
+  read -r -e -p "$prompts"
+  [[ $REPLY ]] && history -s "$REPLY"
 
   case $REPLY in
      [Qq]|[Qq][Uu][Ii][Tt]|${#Dirs[@]}|'')
          clear
-         printf 'Location not changed %s\n' "$gb$PWD$reset"
+         printf '%s %s\n' "${yb}Location not changed$reset" "$bb$PWD$reset"
          return
          ;;
       *[!0-9]*)
@@ -91,7 +92,7 @@ mcd() {
 
    if pushd "$dest" >/dev/null; then
      clear
-     printf '%s %s\n' "${b}Now in directory$reset" "$gb$PWD$reset"
+     printf '%s %s\n' "${b}Now in directory$reset" "$bb$PWD$reset"
      return
    fi
 }
