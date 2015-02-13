@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Fri Feb 13 09:17:25 PHT 2015 / Fri Feb 13 01:17:25 UTC 2015               #
+#: Last Edit       : Sat Feb 14 07:40:13 PHT 2015 / Fri Feb 13 23:40:13 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.1.4                                                                     #
+#: Version         : 1.2.4                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A function that list a menu of recently visited directories.              #
 #: Options         : NONE                                                                      #
@@ -15,7 +15,7 @@
 mcd() {
   shopt -s extglob
 
-  local _AssocDirs_ b bb dest dir dirst Dirs Dir f gb i j n reset prompts yb
+  local _AssocDirs_ b bb dest dir dirst Dirs Dir f gb i j n reset options prompts yb
   declare -A _AssocDirs_
 
   b=$(tput bold)
@@ -49,19 +49,25 @@ mcd() {
   case ${#Dir[@]} in
      1)
      printf '\n%s\n' "${b}Directory stack is empty!$reset"
-     return
+     return 1
      ;;
   esac
 
-  printf -v prompts '\n %s' "$yb[${gb}1${reset}${yb}-$reset$gb$((${#Dirs[@]} + 1 ))$reset$yb] ==>$reset "
+  printf -v prompts '\n%s' "$yb[${gb}1${reset}${yb}-$reset$gb$((${#Dirs[@]} + 1 ))$reset$yb] ==>$reset "
   clear
-  printf "\n  %s %s\n" "${yb}Current Location:$reset" "$bb$PWD$reset"
+  printf '%s %s\n' "${yb}Current Location:$reset" "$bb$PWD$reset"
   printf '%s\n' "${empty_line+""}"
 
   Dirs=("${Dirs[@]}" "$reset${yb}Quit$reset")
   __Menu__ "${Dirs[@]}"
 
-  read -r -p "$prompts"
+  if (( ${#Dirs[@]} <= 9 )); then
+    options=("$prompts" -n 1)
+  else
+    options=("$prompts")
+  fi
+
+  read -r -p "${options[@]}"
 
   case $REPLY in
      [Qq]|[Qq][Uu][Ii][Tt]|${#Dirs[@]}|'')
@@ -78,17 +84,18 @@ mcd() {
 
    if (( REPLY > ${#Dirs[@]} || REPLY == 0 )); then
      clear
-     printf '[%s] not in range from [%s-%s] \n' "$gb$REPLY$reset" "${gb}1$reset" "$gb${#Dirs[@]}$reset" >&2
+     printf "[%s] ${yb}not in range from$reset [%s-%s] \n" "$gb$REPLY$reset" "${gb}1$reset" "$gb${#Dirs[@]}$reset" >&2
      return 1
    fi
 
    for j in "${!_AssocDirs_[@]}"; do
-     [[ $REPLY = $j ]] && dest=${_AssocDirs_[$REPLY]}
+     if [[ $REPLY = $j ]]; then
+       if  builtin pushd "${_AssocDirs_[$REPLY]}" >/dev/null; then
+          clear
+          printf '%s %s\n' "${b}Now in directory$reset" "$bb$PWD$reset"
+       fi
+     fi
    done
 
-   if pushd "$dest" >/dev/null; then
-     clear
-     printf '%s %s\n' "${b}Now in directory$reset" "$bb$PWD$reset"
-     return
-   fi
+   return 0
 }
