@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Sun Feb 15 20:55:56 PHT 2015 / Sun Feb 15 12:55:56 UTC 2015               #
+#: Last Edit       : Mon Feb 16 05:33:27 PHT 2015 / Sun Feb 15 21:33:27 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.3.9                                                                     #
+#: Version         : 1.4.0                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A function that list a menu of recently visited directories.              #
 #: Options         : NONE                                                                      #
@@ -15,11 +15,10 @@
 mcd() {
   shopt -s extglob
 
-  local  _AssocDirs_ b bb dest dir dirst Dirs Dir f gb i
+  local  _AssocDirs_ b bb dest dir dirst Dirs Dir f gb i PlusOne
   local  n reset Unique UniqueDirs options prompts yb k j
 
-  declare -A _AssocDirs_
-  declare -A  Unique
+  declare -A _AssocDirs_ Unique
 
   b=$(tput bold)
   reset=$(tput sgr0)
