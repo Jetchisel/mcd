@@ -8,7 +8,7 @@ Copyright 2015 Jetchisel
 * git clone https://github.com/Jetchisel/mcd
 * git checkout -b simple remotes/origin/simple
 * cd mcd/
-* source mcd
+* source ./mcd
 
 ## Usage: A simple test run once you have sourced mcd.
 ```shell
