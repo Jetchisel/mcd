@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Sat Feb 14 22:50:31 PHT 2015 / Sat Feb 14 14:50:31 UTC 2015               #
+#: Last Edit       : Sun Feb 15 08:41:57 PHT 2015 / Sun Feb 15 00:41:57 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.3.5                                                                     #
+#: Version         : 1.3.6                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A function that list a menu of recently visited directories.              #
 #: Options         : NONE                                                                      #
@@ -32,14 +32,10 @@ mcd() {
   mapfile -t Dir < <(dirs -l -p)
 
   for k in "${Dir[@]}"; do
+    [[ $k = @($PWD|$dirst) ]] && continue
     Unique["$k"]=
   done
-  UniqueDirs=("${!Unique[@]}")
-
-  for f in "${UniqueDirs[@]}"; do
-    [[ $f = @($PWD|$dirst) ]] && continue
-    Dirs+=("$f")
-  done
+  Dirs=("${!Unique[@]}")
 
    __Menu__(){
     n=1
@@ -50,7 +46,7 @@ mcd() {
     done
   }
 
-  case ${#UniqueDirs[@]} in
+  case ${#Dirs[@]} in
      1)
      printf '\n%s\n' "${b}Directory stack is empty!$reset"
      return 1

@@ -10,7 +10,7 @@ Copyright 2015 Jetchisel
 ## Installation
 * git clone https://github.com/Jetchisel/mcd
 * cd mcd/
-* source mcd
+* source ./mcd
 
 ## Usage: A simple test run once you have sourced mcd.
 ```shell
