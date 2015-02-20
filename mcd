@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Mon Feb 16 05:33:27 PHT 2015 / Sun Feb 15 21:33:27 UTC 2015               #
+#: Last Edit       : Fri Feb 20 20:00:58 PHT 2015 / Fri Feb 20 12:00:58 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.4.2                                                                     #
+#: Version         : 1.4.3                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A function that list a menu of recently visited directories.              #
 #: Options         : NONE                                                                      #
@@ -40,8 +40,7 @@ mcd() {
     n=1
     for i; do
       printf "$gb%3d.$reset %s\n" "$n" "$bb$i$reset"
-      _AssocDirs_["$n"]="$i"
-      ((n++))
+      _AssocDirs_["$((n++))"]="$i"
     done
   }
 
