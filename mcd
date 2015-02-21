@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Fri Feb 20 20:00:58 PHT 2015 / Fri Feb 20 12:00:58 UTC 2015               #
+#: Last Edit       : Sun Feb 22 06:12:58 PHT 2015 / Sat Feb 21 22:12:58 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.4.3                                                                     #
+#: Version         : 1.4.4                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A function that list a menu of recently visited directories.              #
 #: Options         : NONE                                                                      #
@@ -16,7 +16,7 @@ mcd() {
   shopt -s extglob
 
   local  _AssocDirs_ b bb dest dir dirst Dirs Dir f gb i PlusOne
-  local  n reset Unique UniqueDirs options prompts yb k j
+  local  n reset Unique UniqueDirs options prompts yb k j RangeMessage
 
   declare -A _AssocDirs_ Unique
 
@@ -64,28 +64,26 @@ mcd() {
 
   case $REPLY in
      [Qq]|[Qq][Uu][Ii][Tt]|${#Dirs[@]}|'')
-         clear
-         printf '%s %s\n' "${yb}Location not changed$reset" "$bb$PWD$reset"
+         clear && printf '%s %s\n' "${yb}Location not changed$reset" "$bb$PWD$reset"
          return
          ;;
-      *[!0-9]*)
-         clear
-         printf '%s [%s]\n' "${b}Unknown response!$reset" "$gb$REPLY$reset" >&2
+      *[!0-9]*|0*)
+         clear && printf '%s [%s]\n' "${b}Unknown response!$reset" "$gb$REPLY$reset" >&2
          return 1
          ;;
   esac
 
-  if [[ $REPLY = 0* ]] || (( REPLY > ${#Dirs[@]} )); then
-    clear
-    printf "[%s] ${yb}not in range from$reset [%s-%s] \n" "$gb$REPLY$reset" "${gb}1$reset" "$gb${#Dirs[@]}$reset" >&2
+  RangeMessage=("$gb$REPLY$reset" "${gb}1$reset" "$gb${#Dirs[@]}$reset")
+
+  if (( REPLY > ${#Dirs[@]} )); then
+    clear && printf "[%s] ${yb}not in range from$reset [%s-%s] \n" "${RangeMessage[@]}" >&2
     return 1
   fi
 
   for j in "${!_AssocDirs_[@]}"; do
     if [[ $REPLY = $j ]]; then
-      if  builtin pushd "${_AssocDirs_[$REPLY]}" >/dev/null; then
-        clear
-        printf '%s %s\n' "${b}Now in directory$reset" "$bb$PWD$reset"
+      if builtin pushd "${_AssocDirs_[$REPLY]}" >/dev/null; then
+        clear && printf '%s %s\n' "${b}Now in directory$reset" "$bb$PWD$reset"
       fi
     fi
   done
