@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Sun Feb 22 06:12:58 PHT 2015 / Sat Feb 21 22:12:58 UTC 2015               #
+#: Last Edit       : Tue Feb 24 22:51:58 PHT 2015 / Tue Feb 24 14:51:58 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.4.4                                                                     #
+#: Version         : 1.4.4-newlinefix                                                          #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A function that list a menu of recently visited directories.              #
 #: Options         : NONE                                                                      #
@@ -15,7 +15,22 @@
 ____DirStack____s=()
 
 cd() {
-  builtin cd "$@" && ____DirStack____s+=("${PWD//$'\n'/_}")
+  local f options directory
+
+  for f; do
+    [[ ! -d $f ]] && options+=("$f")
+    [[ -d $f ]] && directory=$f
+  done
+
+  if (( ${#options[@]} && ${#directory} )); then
+    builtin cd "${options[@]}" "$directory" && ____DirStack____s+=("${PWD//$'\n'/\\n}")
+  elif (( ! ${#options[@]} && ${#directory} )); then
+    builtin cd "$directory" && ____DirStack____s+=("${PWD//$'\n'/\\n}")
+  elif (( ! ${#directory} && ${#options[@]} )); then
+    builtin cd "${options[@]}"
+  else
+    builtin cd "$HOME" && ____DirStack____s+=("${PWD//$'\n'/\\n}")
+  fi
 }
 
 mcd() {
@@ -25,7 +40,7 @@ mcd() {
   local  n reset Unique UniqueDirs options prompts yb k j RangeMessage line
 
   declare -A _AssocDirs_ Unique
- #set -x
+
   b=$(tput bold)
   reset=$(tput sgr0)
   gb=$(tput setaf 2 && tput bold)
@@ -35,7 +50,7 @@ mcd() {
   dirst=${dirst%$'\nx'}
 
   for k in "${____DirStack____s[@]}"; do
-    [[ $k = @($PWD|$dirst) ]] && continue
+    [[ $k = @("${PWD//$'\n'/\\n}"|$dirst) ]] && continue
     Unique["$k"]=
   done
   Dirs=("${!Unique[@]}")
@@ -52,7 +67,7 @@ mcd() {
 
   printf -v prompts '\n%s' "$yb[${gb}1${reset}${yb}-$reset$gb$PlusOne$reset$yb] ==>$reset "
   clear
-  printf '%s %s\n' "${yb}Current Location:$reset" "$bb${PWD//$'\n'/_}$reset"
+  printf '%s %s\n' "${yb}Current Location:$reset" "$bb${PWD//$'\n'/\\n}$reset"
   printf '%s\n' "${empty_line+""}"
 
   Dirs=("${Dirs[@]}" "$reset${yb}Quit$reset")
@@ -68,7 +83,7 @@ mcd() {
 
   case $REPLY in
      [Qq]|[Qq][Uu][Ii][Tt]|${#Dirs[@]}|'')
-         clear && printf '%s %s\n' "${yb}Location not changed$reset" "$bb${PWD//$'\n'/_}$reset"
+         clear && printf '%s %s\n' "${yb}Location not changed$reset" "$bb${PWD//$'\n'/\\n}$reset"
          return
          ;;
       *[!0-9]*|0*)
@@ -86,8 +101,8 @@ mcd() {
 
   for j in "${!_AssocDirs_[@]}"; do
     if [[ $REPLY = $j ]]; then
-      if cd "${_AssocDirs_[$REPLY]//_/$'\n'}" >/dev/null; then
-        clear && printf '%s %s\n' "${b}Now in directory$reset" "$bb${PWD//$'\n'/_}$reset"
+      if cd "${_AssocDirs_[$REPLY]//\\n/$'\n'}" >/dev/null; then
+        clear && printf '%s %s\n' "${b}Now in directory$reset" "$bb${PWD//$'\n'/\\n}$reset"
       fi
     fi
   done
