@@ -15,23 +15,31 @@
 mcd() {
   shopt -s extglob
 
-  local  _AssocDirs_ b bb dest dir dirst Dirs Dir f gb i PlusOne
-  local  n reset Unique UniqueDirs options prompts yb k j RangeMessage
+  local  _AssocDirs_ b bb dest dir dirst Dirs Dir f gb i PlusOne newline
+  local  n reset Unique UniqueDirs options prompts yb k j RangeMessage line
 
   declare -A _AssocDirs_ Unique
-
+ set -x
   b=$(tput bold)
   reset=$(tput sgr0)
   gb=$(tput setaf 2 && tput bold)
   bb=$(tput setaf 4 && tput bold)
   yb=$(tput setaf 3 && tput bold)
-  dirst=$(pwd -P; printf x)
-  dirst=${dirst%$'\nx'}
+  #dirst=$(pwd -P; printf x)
+  #dirst=${dirst%$'\nx'}
+  newline=$'\n'
 
-  mapfile -t Dir < <(dirs -l -p)
+  #mapfile -t Dir < <(dirs -l -p)
+
+  while IFS= read -u9 -r line; do
+     [[ $line = *"$newline"* ]] && line=${line//"$newline"/_}
+     [[ $line = $PWD ]] && continue
+     Dir+=("$line")
+  done 9< <(dirs -l -p)
 
   for k in "${Dir[@]}"; do
-    [[ $k = @($PWD|$dirst) ]] && continue
+    #[[ $k = @($PWD|$dirst) ]] && continue
+    #[[ $k = *$'\n'* ]] && k=${k//$'\n'/_}
     Unique["$k"]=
   done
   Dirs=("${!Unique[@]}")
@@ -40,7 +48,7 @@ mcd() {
     n=1
     for i; do
       printf "$gb%3d.$reset %s\n" "$n" "$bb$i$reset"
-      _AssocDirs_["$((n++))"]="$i"
+      _AssocDirs_+=(["$((n++))"]="$i")
     done
   }
 
@@ -48,7 +56,7 @@ mcd() {
 
   printf -v prompts '\n%s' "$yb[${gb}1${reset}${yb}-$reset$gb$PlusOne$reset$yb] ==>$reset "
   clear
-  printf '%s %s\n' "${yb}Current Location:$reset" "$bb$PWD$reset"
+  printf '%s %s\n' "${yb}Current Location:$reset" "$bb${PWD//$newline/_}$reset"
   printf '%s\n' "${empty_line+""}"
 
   Dirs=("${Dirs[@]}" "$reset${yb}Quit$reset")
