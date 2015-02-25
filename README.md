@@ -14,7 +14,7 @@ Copyright 2015 Jetchisel
 
 ## Usage: A simple test run once you have sourced mcd.
 ```shell
-for f in /*/; do [[ -x $f ]] && builtin pushd "$f" >/dev/null; done
+for f in /*/; do [[ -x $f ]] && cd "$f" >/dev/null; done
 ```
 
 Now run mcd to see the lists of recently visited directories.
@@ -29,5 +29,7 @@ mcd needs to be sourced during interactive session. Put something like this in ~
 Change the **/path/to** with the absolute path where mcd is located.
 
 ##
-Dirstack must have some value/entry and pushd is the builtin utility that does that.
-The builtin dirs command holds the directory stack.
+## Notes
+This branch includes a cd function and an array of Directory stack which tries hard to work
+around those nasty directories with embedded newlines.
+
