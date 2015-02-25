@@ -2,15 +2,20 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Wed Feb 25 10:03:20 PHT 2015 / Wed Feb 25 02:03:20 UTC 2015               #
+#: Last Edit       : Wed Feb 25 14:32:45 PHT 2015 / Wed Feb 25 06:32:45 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.4.4-fixnewline                                                          #
+#: Version         : 1.4.5-fixnewline                                                          #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A function that list a menu of recently visited directories.              #
 #: Options         : NONE                                                                      #
 #: Home Page       : https://github.com/Jetchisel/mcd                                          #
 #: ExtComm         : clear,tput                                                                #
 # ============================================================================================ #
+
+if [[ $- != *i* ]]; then
+  printf '%s\n' "You should dot me in!" >&2
+  exit 1
+fi
 
 ____D_i_r_S_t_a_c_k____s=()
 
