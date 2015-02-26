@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Thu Feb 26 08:11:43 PHT 2015 / Thu Feb 26 00:11:43 UTC 2015               #
+#: Last Edit       : Thu Feb 26 10:11:31 PHT 2015 / Thu Feb 26 02:11:31 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.4.8                                                                     #
+#: Version         : 1.4.9                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A function that list a menu of recently visited directories.              #
 #: Options         : NONE                                                                      #
@@ -90,12 +90,3 @@ mcd() {
 
   return 0
 }
-
-__D_o_t_M_e_I_n__() {
-  if [[ $- != *i* ]]; then
-    printf '%s\n' "You should dot me in!" >&2
-    return 1
-  fi
-}
-
-__D_o_t_M_e_I_n__
