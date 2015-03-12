@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Fri Mar 13 04:48:47 PHT 2015 / Thu Mar 12 20:48:47 UTC 2015               #
+#: Last Edit       : Fri Mar 13 05:00:16 PHT 2015 / Thu Mar 12 21:00:16 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.7.0-fixnewline                                                          #
+#: Version         : 1.7.1-fixnewline                                                          #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A function that list a menu of recently visited directories.              #
 #: Options         : NONE                                                                      #
@@ -15,7 +15,7 @@
 ____D_i_r_S_t_a_c_k____s=()
 
 cd() {
-  local f options directory staus
+  local f options directory status
 
   for f; do
     [[ ! -d $f ]] && options+=("$f")
