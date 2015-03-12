@@ -2,14 +2,14 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Thu Feb 26 10:07:48 PHT 2015 / Thu Feb 26 02:07:48 UTC 2015               #
+#: Last Edit       : Fri Mar 13 03:59:07 PHT 2015 / Thu Mar 12 19:59:07 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.4.9-fixnewline                                                          #
+#: Version         : 1.6.9-fixnewline                                                          #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A function that list a menu of recently visited directories.              #
 #: Options         : NONE                                                                      #
 #: Home Page       : https://github.com/Jetchisel/mcd                                          #
-#: ExtComm         : clear,tput                                                                #
+#: ExtComm         : clear,git,tput                                                            #
 # ============================================================================================ #
 
 ____D_i_r_S_t_a_c_k____s=()
@@ -31,6 +31,12 @@ cd() {
   else
     builtin cd "$HOME" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
   fi
+
+  if type -P git >/dev/null; then
+    git rev-parse 2>/dev/null && git status
+  fi
+  return 0
+
 }
 
 mcd() {
@@ -63,14 +69,12 @@ mcd() {
     done
   }
 
-  PlusOne=$(( ${#Dirs[@]} + 1 ))
-
-  printf -v prompts '\n%s' "$yb[${gb}1${reset}${yb}-$reset$gb$PlusOne$reset$yb] ==>$reset "
+  Dirs+=("$reset${yb}Quit$reset")
+  printf -v prompts '\n%s' "$yb[${gb}1${reset}${yb}-$reset$gb${#Dirs[@]}$reset$yb] ==>$reset "
   clear
   printf '%s %s\n' "${yb}Current Location:$reset" "$bb${PWD//$'\n'/\\n}$reset"
   printf '%s\n' "${empty_line+""}"
 
-  Dirs=("${Dirs[@]}" "$reset${yb}Quit$reset")
   __Menu__ "${Dirs[@]}"
 
   if (( ${#Dirs[@]} <= 9 )); then
@@ -101,8 +105,9 @@ mcd() {
 
   for j in "${!_AssocDirs_[@]}"; do
     if [[ $REPLY = $j ]]; then
-      if cd "${_AssocDirs_[$REPLY]//\\n/$'\n'}" >/dev/null; then
-        clear && printf '%s %s\n' "${b}Now in directory$reset" "$bb${PWD//$'\n'/\\n}$reset"
+      clear
+      if cd "${_AssocDirs_[$REPLY]//\\n/$'\n'}"; then
+        printf '%s %s\n' "${b}Now in directory$reset" "$bb${PWD//$'\n'/\\n}$reset"
       fi
     fi
   done
