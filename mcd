@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Fri Mar 13 05:00:16 PHT 2015 / Thu Mar 12 21:00:16 UTC 2015               #
+#: Last Edit       : Sat Mar 14 15:02:51 PHT 2015 / Sat Mar 14 07:02:51 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.7.1-fixnewline                                                          #
+#: Version         : 1.7.2-fixnewline                                                          #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A function that list a menu of recently visited directories.              #
 #: Options         : NONE                                                                      #
@@ -19,7 +19,7 @@ cd() {
 
   for f; do
     [[ ! -d $f ]] && options+=("$f")
-    [[ -d $f ]] && directory=$f
+    [[ -d $f ]] && directory+=("$f")
   done
 
   if (( ${#options[@]} && ${#directory} )); then
@@ -36,12 +36,12 @@ cd() {
 
   if (( ! status )); then
     if type -P git >/dev/null; then
-      git rev-parse 2>/dev/null && git status
+      git rev-parse 2>/dev/null && printf '%s\n' "Git repository detected." && git status
+      return 0
     fi
-  else
-    return "$status"
   fi
-  return 0
+
+  return "$status"
 }
 
 mcd() {
