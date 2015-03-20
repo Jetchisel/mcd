@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd                                                                       #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Sat Mar 14 15:02:51 PHT 2015 / Sat Mar 14 07:02:51 UTC 2015               #
+#: Last Edit       : Fri Mar 20 16:15:01 PHT 2015 / Fri Mar 20 08:15:01 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.7.2-fixnewline                                                          #
+#: Version         : 1.7.3-fixnewline                                                          #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A function that list a menu of recently visited directories.              #
 #: Options         : NONE                                                                      #
@@ -34,11 +34,9 @@ cd() {
 
   status=$?
 
-  if (( ! status )); then
-    if type -P git >/dev/null; then
-      git rev-parse 2>/dev/null && printf '%s\n' "Git repository detected." && git status
-      return 0
-    fi
+  if (( ! status )) && type -P git >/dev/null; then
+    git rev-parse 2>/dev/null && printf '%s\n' "Git repository detected." && git status
+    return "$status"
   fi
 
   return "$status"
@@ -47,16 +45,23 @@ cd() {
 mcd() {
   shopt -s extglob
 
-  local  _AssocDirs_ b bb dest dir dirst Dirs Dir f gb i PlusOne newline
-  local  n reset Unique UniqueDirs options prompts yb k j RangeMessage line
+  LocalVars=(
+    b bb dest dir dirst Dirs Dir f gb LocalVars PlusOne newline
+    reset UniqueDirs options prompts yb k j RangeMessage line
+  )
+
+  local "${LocalVars[@]}"
 
   declare -A _AssocDirs_ Unique
 
-  b=$(tput bold)
-  reset=$(tput sgr0)
-  gb=$(tput setaf 2 && tput bold)
-  bb=$(tput setaf 4 && tput bold)
-  yb=$(tput setaf 3 && tput bold)
+  if type -P tput >/dev/null; then
+    b=$(tput bold)
+    reset=$(tput sgr0)
+    gb=$(tput setaf 2; printf '%s' "$b")
+    bb=$(tput setaf 4; printf '%s' "$b")
+    yb=$(tput setaf 3; printf '%s' "$b")
+  fi
+
   dirst=$(pwd -P; printf x)
   dirst=${dirst%$'\nx'}
 
@@ -67,7 +72,7 @@ mcd() {
   Dirs=("${!Unique[@]}")
 
   __Menu__() {
-    n=1
+    local n=1 i
     for i; do
       printf "$gb%3d.$reset %s\n" "$n" "$bb$i$reset"
       _AssocDirs_["$((n++))"]="$i"
@@ -109,12 +114,8 @@ mcd() {
   fi
 
   for j in "${!_AssocDirs_[@]}"; do
-    if [[ $REPLY = $j ]]; then
-      clear
-      if cd "${_AssocDirs_[$REPLY]//\\n/$'\n'}"; then
-        printf '%s %s\n' "${b}Now in directory$reset" "$bb${PWD//$'\n'/\\n}$reset"
-      fi
-    fi
+    [[ $REPLY = $j ]] && clear
+    cd "${_AssocDirs_[$REPLY]//\\n/$'\n'}"
   done
 
   return 0
