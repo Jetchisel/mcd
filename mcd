@@ -1,42 +1,97 @@
 # ============================================================================================ #
 #: Title           : mcd                                                                       #
-#: Sypnosis        : mcd                                                                       #
+#: Sypnosis        : mcd [OPTIONS]...                                                          #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Thu Feb 26 10:11:31 PHT 2015 / Thu Feb 26 02:11:31 UTC 2015               #
+#: Last Edit       : Mon Mar 23 04:38:25 PHT 2015 / Sun Mar 22 20:38:25 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 1.4.9                                                                     #
+#: Version         : 2.0.0                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
-#: Description     : A function that list a menu of recently visited directories.              #
-#: Options         : NONE                                                                      #
+#: Description     : A shell function that lists a menu of the recently visited directories.   #
+#: Options         : [-a|--about] [-h|--help] [-n|--no-color]                                  #
 #: Home Page       : https://github.com/Jetchisel/mcd                                          #
-#: ExtComm         : clear,tput                                                                #
+#: ExtComm         : cat,clear,git,tput                                                        #
 # ============================================================================================ #
+
+____D_i_r_S_t_a_c_k____s=()
+
+cd() {
+  local f options directory status
+
+  for f; do
+    [[ ! -d $f ]] && options+=("$f")
+    [[ -d $f ]] && directory+=("$f")
+  done
+
+  if (( ${#options[@]} && ${#directory} )); then
+    builtin cd "${options[@]}" "$directory" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
+  elif (( ! ${#options[@]} && ${#directory} )); then
+    builtin cd "$directory" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
+  elif (( ! ${#directory} && ${#options[@]} )); then
+    builtin cd "${options[@]}"
+  else
+    builtin cd "$HOME" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
+  fi
+
+  status=$?
+
+  if (( ! status )) && type -P git >/dev/null; then
+    git rev-parse 2>/dev/null && printf '%s\n' "Git repository detected." && git status
+    return "$status"
+  fi
+
+  return "$status"
+}
 
 mcd() {
   shopt -s extglob
 
-  local  _AssocDirs_ b bb dest dir dirst Dirs Dir f gb i PlusOne
-  local  n reset Unique UniqueDirs options prompts yb k j RangeMessage
-
   declare -A _AssocDirs_ Unique
 
-  b=$(tput bold)
-  reset=$(tput sgr0)
-  gb=$(tput setaf 2 && tput bold)
-  bb=$(tput setaf 4 && tput bold)
-  yb=$(tput setaf 3 && tput bold)
+  local b bb dest dir dirst Dirs Dir f gb i j k n PlusOne __Menu__
+  local newline reset UniqueDirs options prompts yb RangeMessage
+
+   if type -P tput >/dev/null; then
+     b=$(tput bold)
+     reset=$(tput sgr0)
+     gb=$(tput setaf 2; printf '%s' "$b")
+     bb=$(tput setaf 4; printf '%s' "$b")
+     yb=$(tput setaf 3; printf '%s' "$b")
+   fi
+
+   while (($#)); do
+     case $1 in
+       --no-color|-n)
+         unset b bb gb reset yb
+         break
+         ;;
+       --about|-a)
+        ___mcd__a__b__o__u__t
+         return
+         ;;
+       --help|-h)
+         ___mcd___U___s___a___g___e___
+         return
+         ;;
+        *)
+         ___mcd___U___s___a___g___e___ >&2
+         return 1
+         ;;
+     esac
+   done
+
   dirst=$(pwd -P; printf x)
   dirst=${dirst%$'\nx'}
 
-  mapfile -t Dir < <(dirs -l -p)
-
-  for k in "${Dir[@]}"; do
-    [[ $k = @($PWD|$dirst) ]] && continue
+  for k in "${____D_i_r_S_t_a_c_k____s[@]}"; do
+    [[ $k = @("${PWD//$'\n'/\\n}"|$dirst) ]] && continue
     Unique["$k"]=
   done
   Dirs=("${!Unique[@]}")
 
   __Menu__() {
+    clear
+    printf '%s %s\n' "${yb}Current directory:$reset" "$bb${PWD//$'\n'/\\n}$reset"
+    printf '%s\n' "${empty_line+""}"
     n=1
     for i; do
       printf "$gb%3d.$reset %s\n" "$n" "$bb$i$reset"
@@ -44,14 +99,9 @@ mcd() {
     done
   }
 
-  PlusOne=$(( ${#Dirs[@]} + 1 ))
+  Dirs+=("$reset${yb}Quit$reset")
+  printf -v prompts '\n%s' "$yb[${gb}1${reset}${yb}-$reset$gb${#Dirs[@]}$reset$yb] ==>$reset "
 
-  printf -v prompts '\n%s' "$yb[${gb}1${reset}${yb}-$reset$gb$PlusOne$reset$yb] ==>$reset "
-  clear
-  printf '%s %s\n' "${yb}Current Location:$reset" "$bb$PWD$reset"
-  printf '%s\n' "${empty_line+""}"
-
-  Dirs=("${Dirs[@]}" "$reset${yb}Quit$reset")
   __Menu__ "${Dirs[@]}"
 
   if (( ${#Dirs[@]} <= 9 )); then
@@ -64,7 +114,7 @@ mcd() {
 
   case $REPLY in
      [Qq]|[Qq][Uu][Ii][Tt]|${#Dirs[@]}|'')
-         clear && printf '%s %s\n' "${yb}Location not changed$reset" "$bb$PWD$reset"
+         clear && printf '%s %s\n' "${yb}Location not changed$reset" "$bb${PWD//$'\n'/\\n}$reset"
          return
          ;;
       *[!0-9]*|0*)
@@ -81,12 +131,56 @@ mcd() {
   fi
 
   for j in "${!_AssocDirs_[@]}"; do
-    if [[ $REPLY = $j ]]; then
-      if builtin pushd "${_AssocDirs_[$REPLY]}" >/dev/null; then
-        clear && printf '%s %s\n' "${b}Now in directory$reset" "$bb$PWD$reset"
-      fi
-    fi
+    [[ $REPLY = $j ]] && clear
+    cd "${_AssocDirs_[$REPLY]//\\n/$'\n'}"
   done
 
   return 0
+}
+
+___mcd__a__b__o__u__t() {
+  cat <<EOF
+
+                         Mcd
+
+Copyright  (C)  2015 Jason V. Ferrer  '<jetchisel@opensuse.org>'
+
+A bash  shell function that  lists  a  menu  of  the  previously
+visited  directories. Duplicate directories are discarded in the
+menu (directories visited more than once).  When sourced, it has
+it's own "cd" and it's own directory stack. (overriding the bui-
+ltins.). It tries to work around those directories with embedded
+newlines  which  the  builtin  "dirs" can't handle. If the "git"
+utility is installed, the status of the git repo is printed once
+inside the directory.
+
+This  program is  free software;  you can redistribute it and/or
+modify  it  under  the terms  of the  GNU General Public License
+version 3 as published by the Free Software Foundation.
+
+This program is  distributed in the hope that it will be useful,
+but WITHOUT  ANY WARRANTY; without even the  implied warranty of
+MERCHANTABILITY  or  FITNESS  FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+EOF
+}
+
+___mcd___U___s___a___g___e___() {
+  cat <<EOF
+
+Usage: mcd [OPTIONS]...
+
+Options:
+  -h, --help       Show this help.
+  -a, --about      Show a brief info about mcd.
+  -n, --no-color   Print the default fonts.
+                   (Supress the bold/colored font output).
+
+Without an option and if  the "tput" utility is installed,
+by  default  the  fonts  are bold  and colored. If the git
+utility is installed the status of the git repo is printed
+once inside the git repo.
+
+EOF
 }
