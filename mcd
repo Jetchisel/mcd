@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd [OPTIONS]...                                                          #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Mon Mar 23 04:38:25 PHT 2015 / Sun Mar 22 20:38:25 UTC 2015               #
+#: Last Edit       : Tue Mar 24 14:37:59 PHT 2015 / Tue Mar 24 06:37:59 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 2.0.0                                                                     #
+#: Version         : 2.0.1                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A shell function that lists a menu of the recently visited directories.   #
 #: Options         : [-a|--about] [-h|--help] [-n|--no-color]                                  #
@@ -15,69 +15,69 @@
 ____D_i_r_S_t_a_c_k____s=()
 
 cd() {
-  local f options directory status
+  local f options directory return_status
 
   for f; do
     [[ ! -d $f ]] && options+=("$f")
     [[ -d $f ]] && directory+=("$f")
   done
 
-  if (( ${#options[@]} && ${#directory} )); then
+  if (( ${#options[@]} && ${#directory[@]} )); then
     builtin cd "${options[@]}" "$directory" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
-  elif (( ! ${#options[@]} && ${#directory} )); then
+  elif (( ! ${#options[@]} && ${#directory[@]} )); then
     builtin cd "$directory" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
-  elif (( ! ${#directory} && ${#options[@]} )); then
+  elif (( ! ${#directory[@]} && ${#options[@]} )); then
     builtin cd "${options[@]}"
   else
     builtin cd "$HOME" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
   fi
 
-  status=$?
+  return_status=$?
 
-  if (( ! status )) && type -P git >/dev/null; then
+  if (( ! return_status )) && type -P git >/dev/null; then
     git rev-parse 2>/dev/null && printf '%s\n' "Git repository detected." && git status
-    return "$status"
+    return "$return_status"
   fi
 
-  return "$status"
+  return "$return_status"
 }
 
 mcd() {
   shopt -s extglob
 
   declare -A _AssocDirs_ Unique
+  declare -a Dirs options RangeMessage
 
-  local b bb dest dir dirst Dirs Dir f gb i j k n PlusOne __Menu__
-  local newline reset UniqueDirs options prompts yb RangeMessage
+  local b bb dest dir dirst f gb i j k n newline PlusOne REPLY reset UniqueDirs prompts yb
 
-   if type -P tput >/dev/null; then
-     b=$(tput bold)
-     reset=$(tput sgr0)
-     gb=$(tput setaf 2; printf '%s' "$b")
-     bb=$(tput setaf 4; printf '%s' "$b")
-     yb=$(tput setaf 3; printf '%s' "$b")
-   fi
+  if type -P tput >/dev/null; then
+    b=$(tput bold)
+    reset=$(tput sgr0)
+    gb=$(tput setaf 2; printf '%s' "$b")
+    bb=$(tput setaf 4; printf '%s' "$b")
+    yb=$(tput setaf 3; printf '%s' "$b")
+  fi
 
-   while (($#)); do
-     case $1 in
-       --no-color|-n)
-         unset b bb gb reset yb
-         break
-         ;;
-       --about|-a)
-        ___mcd__a__b__o__u__t
+  while (($#)); do
+    case $1 in
+      --no-color|-n)
+        unset b bb gb reset yb
+        break
+        ;;
+      --about|-a)
+       ___mcd__a__b__o__u__t
          return
          ;;
-       --help|-h)
+      --help|-h)
          ___mcd___U___s___a___g___e___
          return
          ;;
-        *)
+         *)
          ___mcd___U___s___a___g___e___ >&2
          return 1
          ;;
-     esac
-   done
+    esac
+  done
 
   dirst=$(pwd -P; printf x)
   dirst=${dirst%$'\nx'}
@@ -88,7 +88,7 @@ mcd() {
   done
   Dirs=("${!Unique[@]}")
 
-  __Menu__() {
+  ___mcd__m__e__n__u___() {
     clear
     printf '%s %s\n' "${yb}Current directory:$reset" "$bb${PWD//$'\n'/\\n}$reset"
     printf '%s\n' "${empty_line+""}"
@@ -102,7 +102,7 @@ mcd() {
   Dirs+=("$reset${yb}Quit$reset")
   printf -v prompts '\n%s' "$yb[${gb}1${reset}${yb}-$reset$gb${#Dirs[@]}$reset$yb] ==>$reset "
 
-  __Menu__ "${Dirs[@]}"
+  ___mcd__m__e__n__u___ "${Dirs[@]}"
 
   if (( ${#Dirs[@]} <= 9 )); then
     options=(-r -p "$prompts" -s -n 1)
@@ -114,7 +114,7 @@ mcd() {
 
   case $REPLY in
      [Qq]|[Qq][Uu][Ii][Tt]|${#Dirs[@]}|'')
-         clear && printf '%s %s\n' "${yb}Location not changed$reset" "$bb${PWD//$'\n'/\\n}$reset"
+         clear && printf '%s %s\n' "${yb}Directory not changed:$reset" "$bb${PWD//$'\n'/\\n}$reset"
          return
          ;;
       *[!0-9]*|0*)
@@ -141,18 +141,20 @@ mcd() {
 ___mcd__a__b__o__u__t() {
   cat <<EOF
 
-                         Mcd
+                            Mcd
 
 Copyright  (C)  2015 Jason V. Ferrer  '<jetchisel@opensuse.org>'
 
-A bash  shell function that  lists  a  menu  of  the  previously
-visited  directories. Duplicate directories are discarded in the
-menu (directories visited more than once).  When sourced, it has
-it's own "cd" and it's own directory stack. (overriding the bui-
-ltins.). It tries to work around those directories with embedded
-newlines  which  the  builtin  "dirs" can't handle. If the "git"
-utility is installed, the status of the git repo is printed once
-inside the directory.
+A bash shell function that let's you easily navigate back to the
+previously visited  directories  by entering  the  corresponding
+number. It lists a menu of the previously  visited  directories.
+Duplicate  directories are  discarded  in the  menu (directories
+visited more than once). When  sourced, it has it's own "cd" and
+it's own directory  stack.  (overriding the builtins.). It tries
+to work  around those  directories with  embedded newlines which
+the  builtin  "dirs" can't  handle.  If  the  "git"  utility  is
+installed the status of the git repo is printed  once inside the
+directory.
 
 This  program is  free software;  you can redistribute it and/or
 modify  it  under  the terms  of the  GNU General Public License
@@ -171,6 +173,9 @@ ___mcd___U___s___a___g___e___() {
 
 Usage: mcd [OPTIONS]...
 
+Navigate  back to  the  previously  visited directories by
+entering the corresponding number in the menu.
+
 Options:
   -h, --help       Show this help.
   -a, --about      Show a brief info about mcd.
@@ -178,9 +183,10 @@ Options:
                    (Supress the bold/colored font output).
 
 Without an option and if  the "tput" utility is installed,
-by  default  the  fonts  are bold  and colored. If the git
-utility is installed the status of the git repo is printed
-once inside the git repo.
+by  default  the fonts are bold  and colored. If the "git"
+utility is installed  the status  of the git repository is
+printed once inside it.
 
 EOF
 }
+
