@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd [OPTIONS]...                                                          #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Wed Mar 25 07:47:06 PHT 2015 / Tue Mar 24 23:47:06 UTC 2015               #
+#: Last Edit       : Thu Mar 26 14:15:31 PHT 2015 / Thu Mar 26 06:15:31 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 2.0.2                                                                     #
+#: Version         : 2.0.3                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A shell function that lists a menu of the recently visited directories.   #
 #: Options         : [-a|--about] [-h|--help] [-n|--no-color]                                  #
@@ -34,9 +34,12 @@ cd() {
 
   return_status=$?
 
-  if (( ! return_status )) && type -P git >/dev/null; then
-    git rev-parse 2>/dev/null && printf '%s\n\n' "GIT repository detected." && git status
-    return "$return_status"
+  if (( ! return_status )); then
+    clear
+    if type -P git >/dev/null; then
+      git rev-parse 2>/dev/null && printf '%s\n\n' "GIT repository detected." && git status
+      return "$return_status"
+    fi
   fi
 
   return "$return_status"
@@ -131,11 +134,10 @@ mcd() {
   fi
 
   for j in "${!_AssocDirs_[@]}"; do
-    [[ $REPLY = $j ]] && clear
-    cd "${_AssocDirs_[$REPLY]//\\n/$'\n'}" && break
+    [[ $REPLY = $j ]] && dest=${_AssocDirs_[$REPLY]//\\n/$'\n'}
   done
 
-  return 0
+  cd "$dest"
 }
 
 ___mcd__a__b__o__u__t() {
