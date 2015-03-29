@@ -4,7 +4,7 @@ https://github.com/Jetchisel/mcd
 
 Copyright 2015 Jetchisel
 
-A bash shell function that  lists  a  menu  of  the  previously visited directories.
+A bash shell function that  lists  a  menu  of  the currently remembered directories.
 Duplicate directories are discarded in the menu (directories visited more than once).
 When sourced, it has it's own "cd" and it's own directory stack. (overriding the bui-
 ltins.). It tries to work around those directories with embedded newlines  which  the

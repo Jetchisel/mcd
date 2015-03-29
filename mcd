@@ -2,12 +2,12 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd [OPTIONS]...                                                          #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Fri Mar 27 14:32:39 PHT 2015 / Fri Mar 27 06:32:39 UTC 2015               #
+#: Last Edit       : Sun Mar 29 19:21:42 PHT 2015 / Sun Mar 29 11:21:42 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 2.0.4                                                                     #
+#: Version         : 2.0.6                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
-#: Description     : A shell function that lists a menu of the recently visited directories.   #
-#: Options         : [-a|--about] [-h|--help] [-n|--no-color]                                  #
+#: Description     : A shell function that lists a menu of currently remembered directories.   #
+#: Options         : [-a|--about] [-c|--clear] [-h|--help] [-n|--no-color]                     #
 #: Home Page       : https://github.com/Jetchisel/mcd                                          #
 #: ExtComm         : cat,clear,git,tput                                                        #
 # ============================================================================================ #
@@ -34,11 +34,13 @@ cd() {
 
   return_status=$?
 
-  if (( ! return_status )) && [[ ! ${options[@]} =~ ^-$ ]]; then
-    __mcd__c__l__e__a__r__
-    if type -P git >/dev/null; then
-      git rev-parse 2>/dev/null && printf '%s\n\n' "GIT repository detected." && git status
-      return "$return_status"
+  if (( ! return_status )); then
+    if [[ ${options[0]} = - ]]; then
+      __mcd__c__l__e__a__r__
+      printf '%s\n' "${PWD//$'\n'/\\n}" &&  __mcd__c__h__e__c__k__g__i__t
+    elif [[ ! ${options[0]} = - ]]; then
+      __mcd__c__l__e__a__r__
+      __mcd__c__h__e__c__k__g__i__t
     fi
   fi
 
@@ -69,6 +71,11 @@ mcd() {
          ;;
       --about|-a)
          ___mcd__a__b__o__u__t
+         return
+         ;;
+      --clear|-c)
+         unset ____D_i_r_S_t_a_c_k____s && __mcd__c__l__e__a__r__
+         printf '%s\n' "Directory stack is now empty!"
          return
          ;;
       --help|-h|-?)
@@ -143,6 +150,13 @@ mcd() {
   cd "$dest"
 }
 
+__mcd__c__h__e__c__k__g__i__t() {
+  if type -P git >/dev/null; then
+    git rev-parse 2>/dev/null && printf '%s\n\n' "GIT repository detected." && git status
+    return "$return_status"
+  fi
+}
+
 __mcd__c__l__e__a__r__() {
   type -P clear >/dev/null && command clear
 }
@@ -156,7 +170,7 @@ __mcd__c__l__e__a__r__
 Copyright  (C)  2015 Jason V. Ferrer  '<jetchisel@opensuse.org>'
 
 A bash shell function that let's you easily navigate back to the
-previously visited  directories  by entering  the  corresponding
+currently remembered directories by providing the  corresponding
 number. It lists a menu of the previously  visited  directories.
 Duplicate  directories are  discarded  in the  menu (directories
 visited more than once). When  sourced, it has it's own "cd" and
@@ -184,12 +198,13 @@ __mcd__c__l__e__a__r__
 
 Usage: mcd [OPTIONS]...
 
-Navigate  back to  the  previously  visited directories by
-entering the corresponding number in the menu.
+Navigate back to the  currently remembered  directories by
+providing the corresponding number in the menu.
 
 Options:
-  -h, --help       Show this help.
   -a, --about      Show a brief info about mcd.
+  -c, --clear      clear the directory stack.
+  -h, --help       Show this help.
   -n, --no-color   Print the default fonts.
                    (Supress the bold/colored font output).
 
