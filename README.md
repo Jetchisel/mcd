@@ -11,10 +11,14 @@ ltins.). It tries to work around those directories with embedded newlines  which
 builtin "dirs" can't handle. If the "git" utility is installed, the status of the git
 repo is printed once inside the directory.
 
+## Requirements
+* Bash version 4 and newer is a must because of Associative arrays.
+* Tput and git are optional.
+
 ## Installation
 * git clone https://github.com/Jetchisel/mcd
-* cd mcd/
-* source ./mcd
+* cd mcd/ && source ./mcd
+* or just download the zip archive and unpack it.
 
 ## Usage: A simple test run once you have sourced mcd.
 ```shell
@@ -34,4 +38,4 @@ mcd needs to be sourced during interactive session. Put something like this in ~
 ```shell
 [[ -s /path/to/mcd ]] && source /path/to/mcd
 ```
-Change the **/path/to** with the absolute path where mcd is located.
+Change the **/path/to** with the absolute path where the file mcd is located.

@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd [OPTIONS]...                                                          #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Sun Mar 29 19:21:42 PHT 2015 / Sun Mar 29 11:21:42 UTC 2015               #
+#: Last Edit       : Mon Mar 30 03:54:07 PHT 2015 / Sun Mar 29 19:54:07 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 2.0.6                                                                     #
+#: Version         : 2.0.8                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A shell function that lists a menu of currently remembered directories.   #
 #: Options         : [-a|--about] [-c|--clear] [-h|--help] [-n|--no-color]                     #
@@ -49,6 +49,11 @@ cd() {
 
 mcd() {
   shopt -s extglob
+
+  if (( BASH_VERSINFO[0] < 4 )); then
+    printf >&2 'This function requires bash 4.0 or newer\n'
+    return 1
+  fi
 
   declare -A _AssocDirs_ Unique
   declare -a Dirs options RangeMessage
@@ -123,16 +128,16 @@ mcd() {
   read "${options[@]}"
 
   case $REPLY in
-     [Qq]|[Qq][Uu][Ii][Tt]|${#Dirs[@]}|'')
-         __mcd__c__l__e__a__r__
-         printf '%s %s\n' "${yb}Directory not changed:$reset" "$bb${PWD//$'\n'/\\n}$reset"
-         return
-         ;;
-      *[!0-9]*|0*)
-         __mcd__c__l__e__a__r__
-         printf '%s [%s]\n' "${b}Unknown response!$reset" "$gb$REPLY$reset" >&2
-         return 1
-         ;;
+    [Qq]|[Qq][Uu][Ii][Tt]|${#Dirs[@]}|'')
+       __mcd__c__l__e__a__r__
+       printf '%s %s\n' "${yb}Directory not changed:$reset" "$bb${PWD//$'\n'/\\n}$reset"
+       return
+       ;;
+    *[!0-9]*|0*)
+       __mcd__c__l__e__a__r__
+       printf '%s [%s]\n' "${b}Unknown response!$reset" "$gb$REPLY$reset" >&2
+       return 1
+       ;;
   esac
 
   RangeMessage=("$gb$REPLY$reset" "${gb}1$reset" "$gb${#Dirs[@]}$reset")
@@ -162,7 +167,7 @@ __mcd__c__l__e__a__r__() {
 }
 
 ___mcd__a__b__o__u__t() {
-__mcd__c__l__e__a__r__
+  __mcd__c__l__e__a__r__
   cat <<EOF
 
                             Mcd
@@ -171,7 +176,7 @@ Copyright  (C)  2015 Jason V. Ferrer  '<jetchisel@opensuse.org>'
 
 A bash shell function that let's you easily navigate back to the
 currently remembered directories by providing the  corresponding
-number. It lists a menu of the previously  visited  directories.
+number. It lists a menu of the currently remembered directories.
 Duplicate  directories are  discarded  in the  menu (directories
 visited more than once). When  sourced, it has it's own "cd" and
 it's own directory  stack.  (overriding the builtins.). It tries
@@ -193,7 +198,7 @@ EOF
 }
 
 ___mcd___U___s___a___g___e___() {
-__mcd__c__l__e__a__r__
+  __mcd__c__l__e__a__r__
   cat <<EOF
 
 Usage: mcd [OPTIONS]...
@@ -205,8 +210,8 @@ Options:
   -a, --about      Show a brief info about mcd.
   -c, --clear      clear the directory stack.
   -h, --help       Show this help.
-  -n, --no-color   Print the default fonts.
-                   (Supress the bold/colored font output).
+  -n, --no-color   Print the default terminal fonts.
+                   (Do not print bold/colored font).
 
 Without an option and if  the "tput" utility is installed,
 by  default  the fonts are bold  and colored. If the "git"
