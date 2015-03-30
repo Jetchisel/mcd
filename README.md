@@ -1,4 +1,4 @@
-# mcd - A bash function that prints the recently visited directories.
+# mcd - A bash function that prints the currently remembered directories.
 
 https://github.com/Jetchisel/mcd
 
