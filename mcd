@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd [OPTIONS]...                                                          #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Tue Mar 31 07:49:01 PHT 2015 / Mon Mar 30 23:49:01 UTC 2015               #
+#: Last Edit       : Wed Apr 29 07:18:08 PHT 2015 / Tue Apr 28 23:18:08 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 2.0.9                                                                     #
+#: Version         : 2.0.10                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A shell function that lists a menu of currently remembered directories.   #
 #: Options         : [-a|--about] [-c|--clear] [-h|--help] [-n|--no-color]                     #
@@ -152,7 +152,7 @@ mcd() {
     [[ $REPLY = $j ]] && dest=${_AssocDirs_[$REPLY]//\\n/$'\n'}
   done
 
-  cd "$dest"
+  cd "$dest" || die 'Verify that you have proper permissions!'
 }
 
 __mcd__c__h__e__c__k__g__i__t() {
