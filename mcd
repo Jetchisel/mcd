@@ -4,7 +4,7 @@
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
 #: Last Edit       : Wed Apr 29 07:18:08 PHT 2015 / Tue Apr 28 23:18:08 UTC 2015               #
 #: License         : GPLv3                                                                     #
-#: Version         : 2.0.10                                                                     #
+#: Version         : 2.0.10                                                                    #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A shell function that lists a menu of currently remembered directories.   #
 #: Options         : [-a|--about] [-c|--clear] [-h|--help] [-n|--no-color]                     #
