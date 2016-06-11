@@ -2,188 +2,190 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd [OPTIONS]...                                                          #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Wed Apr 29 07:18:08 PHT 2015 / Tue Apr 28 23:18:08 UTC 2015               #
+#: Last Edit       : Sat Jun 11 08:44:47 PHT 2016 / Sat Jun 11 00:44:47 UTC 2016               #
 #: License         : GPLv3                                                                     #
-#: Version         : 2.0.10                                                                    #
+#: Version         : 2.0.11                                                                    #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
-#: Description     : A shell function that lists a menu of currently remembered directories.   #
+#: Description     : A shell function that allows user to navigate to the previous directories #
 #: Options         : [-a|--about] [-c|--clear] [-h|--help] [-n|--no-color]                     #
 #: Home Page       : https://github.com/Jetchisel/mcd                                          #
 #: ExtComm         : cat,clear,git,tput                                                        #
 # ============================================================================================ #
 
-____D_i_r_S_t_a_c_k____s=()
+____D_i_r_S_t_a_c_k____s=() 
 
-cd() {
-  local f options directory return_status
+cd() { 
+  local f options directory return_status 
 
-  for f; do
-    [[ ! -d $f ]] && options+=("$f")
-    [[ -d $f ]] && directory+=("$f")
+  for f; do  
+    [[ ! -d $f ]] && options+=("$f") 
+    [[ -d $f ]] && directory+=("$f") 
   done
 
-  if (( ${#options[@]} && ${#directory[@]} )); then
-    builtin cd "${options[@]}" "$directory" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
-  elif (( ! ${#options[@]} && ${#directory[@]} )); then
-    builtin cd "$directory" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
-  elif (( ! ${#directory[@]} && ${#options[@]} )); then
-    builtin cd "${options[@]}"
+  if (( ${#options[@]} && ${#directory[@]} )); then 
+    builtin cd "${options[@]}" "$directory" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}") 
+  elif (( ! ${#options[@]} && ${#directory[@]} )); then 
+    builtin cd "$directory" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}") 
+  elif (( ! ${#directory[@]} && ${#options[@]} )); then 
+    builtin cd "${options[@]}" 
   else
-    builtin cd "$HOME" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
+    builtin cd "$HOME" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}") 
   fi
 
-  return_status=$?
+  return_status=$? 
 
-  if (( ! return_status )); then
-    if [[ ${options[0]} = - ]]; then
-      __mcd__c__l__e__a__r__
-      printf '%s\n' "${PWD//$'\n'/\\n}" &&  __mcd__c__h__e__c__k__g__i__t
-    elif [[ ! ${options[0]} = - ]]; then
+  if (( ! return_status )); then 
+    if [[ ${options[0]} = "-" ]]; then 
+      __mcd__c__l__e__a__r__           
+      printf '%s\n' "${PWD//$'\n'/\\n}" &&  __mcd__c__h__e__c__k__g__i__t 
+    elif [[ ! ${options[0]} = "-" ]]; then 
       __mcd__c__l__e__a__r__
       __mcd__c__h__e__c__k__g__i__t
     fi
   fi
 
-  return "$return_status"
+  return "$return_status" 
 }
 
 mcd() {
-  shopt -s extglob
+  shopt -s extglob 
 
-  if (( BASH_VERSINFO[0] < 4 )); then
-    printf >&2 'This function requires bash 4.0 or newer\n'
-    return 1
+  if (( BASH_VERSINFO[0] < 4 )); then 
+    printf >&2 'This function requires bash 4.0 or newer\n' 
+    return 1 
   fi
 
-  declare -A _AssocDirs_ Unique
-  declare -a Dirs options RangeMessage
+  declare -A _AssocDirs_ Unique 
+  declare -a Dirs options RangeMessage 
 
   local b bb dest dir dirst f gb i j k n newline PlusOne REPLY reset UniqueDirs prompts yb
 
-  if type -P tput >/dev/null; then
-    b=$(tput bold)
+  if type -P tput >/dev/null; then 
+    b=$(tput bold) 
     reset=$(tput sgr0)
-    gb=$(tput setaf 2; printf '%s' "$b")
-    bb=$(tput setaf 4; printf '%s' "$b")
-    yb=$(tput setaf 3; printf '%s' "$b")
+    gb=$(tput setaf 2; printf '%s' "$b") 
+    bb=$(tput setaf 4; printf '%s' "$b") 
+    yb=$(tput setaf 3; printf '%s' "$b") 
   fi
 
-  while (($#)); do
+  while (($#)); do 
     case $1 in
-      --no-color|-n)
-         unset b bb gb reset yb
-         break
+      --no-color|-n) 
+         unset b bb gb reset yb 
+         break 
          ;;
-      --about|-a)
-         ___mcd__a__b__o__u__t
+      --about|-a) 
+         ___mcd__a__b__o__u__t  
          return
          ;;
-      --clear|-c)
+      --clear|-c) 
          unset ____D_i_r_S_t_a_c_k____s && __mcd__c__l__e__a__r__
          printf '%s\n' "Directory stack is now empty!"
          return
          ;;
-      --help|-h|-?)
+      --help|-h|-?) 
          ___mcd___U___s___a___g___e___
          return
          ;;
-         *)
+         *) 
          ___mcd___U___s___a___g___e___ >&2
          return 1
          ;;
     esac
   done
 
-  dirst=$(pwd -P; printf x)
-  dirst=${dirst%$'\nx'}
+  dirst=$(pwd -P; printf x) 
+  dirst=${dirst%$'\nx'} 
 
-  for k in "${____D_i_r_S_t_a_c_k____s[@]}"; do
-    [[ $k = @("${PWD//$'\n'/\\n}"|$dirst) ]] && continue
-    Unique["$k"]=
+  for k in "${____D_i_r_S_t_a_c_k____s[@]}"; do 
+    [[ $k = @("${PWD//$'\n'/\\n}"|$dirst) ]] && continue 
+    Unique["$k"]=  
   done
-  Dirs=("${!Unique[@]}")
+  Dirs=("${!Unique[@]}") 
 
   ___mcd__m__e__n__u___() {
     __mcd__c__l__e__a__r__
     printf '%s %s\n' "${yb}Current directory:$reset" "$bb${PWD//$'\n'/\\n}$reset"
-    printf '%s\n' "${empty_line+""}"
+    printf '%s\n' "${empty_line+""}" 
     n=1
     for i; do
-      printf "$gb%3d.$reset %s\n" "$n" "$bb$i$reset"
-      _AssocDirs_["$((n++))"]="$i"
+      printf "$gb%3d.$reset %s\n" "$n" "$bb$i$reset" 
+      _AssocDirs_["$((n++))"]="$i" 
     done
   }
 
-  Dirs+=("$reset${yb}Quit$reset")
-  printf -v prompts '\n%s' "$yb[${gb}1${reset}${yb}-$reset$gb${#Dirs[@]}$reset$yb] ==>$reset "
+  Dirs+=("$reset${yb}Quit$reset") 
+  printf -v prompts '\n%s' "$yb[${gb}1${reset}${yb}-$reset$gb${#Dirs[@]}$reset$yb] ==>$reset " 
 
-  ___mcd__m__e__n__u___ "${Dirs[@]}"
+  ___mcd__m__e__n__u___ "${Dirs[@]}" 
 
-  if (( ${#Dirs[@]} <= 9 )); then
-    options=(-r -p "$prompts" -s -n 1)
+  if (( ${#Dirs[@]} <= 9 )); then 
+    options=(-r -p "$prompts" -s -n 1) 
   else
-    options=(-r -p "$prompts")
+    options=(-r -p "$prompts") 
   fi
 
-  read "${options[@]}"
+  read "${options[@]}" 
 
   case $REPLY in
-    [Qq]|[Qq][Uu][Ii][Tt]|${#Dirs[@]}|'')
+    [Qq]|[Qq][Uu][Ii][Tt]|${#Dirs[@]}|'') 
        __mcd__c__l__e__a__r__
        printf '%s %s\n' "${yb}Directory not changed:$reset" "$bb${PWD//$'\n'/\\n}$reset"
        return
        ;;
-    *[!0-9]*|0*)
+    *[!0-9]*|0*) 
        __mcd__c__l__e__a__r__
        printf '%s [%s]\n' "${b}Unknown response!$reset" "$gb$REPLY$reset" >&2
        return 1
        ;;
   esac
 
-  RangeMessage=("$gb$REPLY$reset" "${gb}1$reset" "$gb${#Dirs[@]}$reset")
+  RangeMessage=("$gb$REPLY$reset" "${gb}1$reset" "$gb${#Dirs[@]}$reset") 
 
-  if (( REPLY > ${#Dirs[@]} )); then
+  if (( REPLY > ${#Dirs[@]} )); then 
     __mcd__c__l__e__a__r__
-    printf "[%s] ${yb}not in range from$reset [%s-%s] \n" "${RangeMessage[@]}" >&2
+    printf "[%s] ${yb}not in range from$reset [%s-%s] \n" "${RangeMessage[@]}" >&2 
     return 1
   fi
 
-  for j in "${!_AssocDirs_[@]}"; do
-    [[ $REPLY = $j ]] && dest=${_AssocDirs_[$REPLY]//\\n/$'\n'}
+  for j in "${!_AssocDirs_[@]}"; do 
+    [[ $REPLY = $j ]] && dest=${_AssocDirs_[$REPLY]//\\n/$'\n'} 
   done
+               
+   cd "$dest"  
+}              
 
-  cd "$dest" || die 'Verify that you have proper permissions!'
-}
-
-__mcd__c__h__e__c__k__g__i__t() {
-  if type -P git >/dev/null; then
+__mcd__c__h__e__c__k__g__i__t() { 
+  if type -P git >/dev/null; then 
     git rev-parse 2>/dev/null && printf '%s\n\n' "GIT repository detected." && git status
-    return "$return_status"
+    return "$return_status" 
   fi
 }
 
-__mcd__c__l__e__a__r__() {
-  type -P clear >/dev/null && command clear
+__mcd__c__l__e__a__r__() { 
+  type -P clear >/dev/null && command clear 
 }
 
-___mcd__a__b__o__u__t() {
+___mcd__a__b__o__u__t() { 
   __mcd__c__l__e__a__r__
   cat <<EOF
 
                             Mcd
 
-Copyright  (C)  2015 Jason V. Ferrer  '<jetchisel@opensuse.org>'
+Copyright  2015-2016 Jason V. Ferrer  '<jetchisel@opensuse.org>'
 
-A bash shell function that let's you easily navigate back to the
-currently remembered directories by providing the  corresponding
-number. It lists a menu of the currently remembered directories.
-Duplicate  directories are  discarded  in the  menu (directories
-visited more than once). When  sourced, it has it's own "cd" and
-it's own directory  stack.  (overriding the builtins.). It tries
-to work  around those  directories with  embedded newlines which
-the  builtin  "dirs" can't  handle.  If  the  "git"  utility  is
-installed the status of the git repo is printed  once inside the
-directory.
+A bash  shell function that allows the  user to easily  navigate
+back  to the currently remembered  directories by  providing the
+corresponding  number.  It  lists  a  menu   of  the   currently
+remembered  directories. Duplicate  directories  are   discarded
+in the menu (directories navigated more than once). When sourced
+it has  its own "cd" and its own directory  stack. 
+(overriding the builtins)
+
+It tries to work around directories with embedded newlines which
+the  builtin  "dirs" can't  handle  in some  cases. If the "git" 
+utility is installed the status of the git repo is printed  once 
+inside the directory.
 
 This  program is  free software;  you can redistribute it and/or
 modify  it  under  the terms  of the  GNU General Public License
@@ -197,7 +199,7 @@ GNU General Public License for more details.
 EOF
 }
 
-___mcd___U___s___a___g___e___() {
+___mcd___U___s___a___g___e___() { 
   __mcd__c__l__e__a__r__
   cat <<EOF
 
@@ -220,4 +222,3 @@ inside it.
 
 EOF
 }
-
