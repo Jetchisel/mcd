@@ -2,188 +2,190 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd [OPTIONS]...                                                          #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Wed Apr 29 07:18:08 PHT 2015 / Tue Apr 28 23:18:08 UTC 2015               #
+#: Last Edit       : Sat Jun 11 08:44:47 PHT 2016 / Sat Jun 11 00:44:47 UTC 2016               #
 #: License         : GPLv3                                                                     #
-#: Version         : 2.0.10                                                                    #
+#: Version         : 2.0.11                                                                    #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
-#: Description     : A shell function that lists a menu of currently remembered directories.   #
+#: Description     : A shell function that allows user to navigate to the previous directories #
 #: Options         : [-a|--about] [-c|--clear] [-h|--help] [-n|--no-color]                     #
 #: Home Page       : https://github.com/Jetchisel/mcd                                          #
 #: ExtComm         : cat,clear,git,tput                                                        #
 # ============================================================================================ #
 
-____D_i_r_S_t_a_c_k____s=()
+____D_i_r_S_t_a_c_k____s=() ##: The empty directory stack array, We use more underscores in order not to collide with system variables.
 
-cd() {
-  local f options directory return_status
+cd() { ##: Add all the directories to the array ____D_i_r_S_t_a_c_k____s and replace newlines with a literal \n.
+  local f options directory return_status ##: Declaring variables as Local is a must to avoid collision with system variables.
 
-  for f; do
-    [[ ! -d $f ]] && options+=("$f")
-    [[ -d $f ]] && directory+=("$f")
+  for f; do  ##: Loop through the options/arguments
+    [[ ! -d $f ]] && options+=("$f") ##: If argument is not a directory then add it to options array.
+    [[ -d $f ]] && directory+=("$f") ##: If argument is a directory then add it to the directory array.
   done
 
-  if (( ${#options[@]} && ${#directory[@]} )); then
-    builtin cd "${options[@]}" "$directory" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
-  elif (( ! ${#options[@]} && ${#directory[@]} )); then
-    builtin cd "$directory" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
-  elif (( ! ${#directory[@]} && ${#options[@]} )); then
-    builtin cd "${options[@]}"
+  if (( ${#options[@]} && ${#directory[@]} )); then ##: If both the array options & directory are not empty.
+    builtin cd "${options[@]}" "$directory" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}") ##: use the builtin cd and feed options and directory in order.
+  elif (( ! ${#options[@]} && ${#directory[@]} )); then ##: If options array is empty but directory array is not.
+    builtin cd "$directory" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}") ##: use the builtin cd to directory without options.
+  elif (( ! ${#directory[@]} && ${#options[@]} )); then ##: If array directory is empty and array options is not.
+    builtin cd "${options[@]}" ##: Use the builtin cd and feed the options only.
   else
-    builtin cd "$HOME" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
+    builtin cd "$HOME" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}") ##: If both arrays options and directory are empty just builtin cd to "$HOME" (the default)
   fi
 
-  return_status=$?
+  return_status=$? ##: Save the exit status of the previous command that was executed depending on the test.
 
-  if (( ! return_status )); then
-    if [[ ${options[0]} = - ]]; then
-      __mcd__c__l__e__a__r__
-      printf '%s\n' "${PWD//$'\n'/\\n}" &&  __mcd__c__h__e__c__k__g__i__t
-    elif [[ ! ${options[0]} = - ]]; then
+  if (( ! return_status )); then ##: $return_status value is zero, in math context it is a failure (but it is a success in test) . Thats why we negate using the !.
+    if [[ ${options[0]} = "-" ]]; then ##: First option is a dash - (emulate the builtin cd behavor, don't accept more option, go back to the previous directory)
+      __mcd__c__l__e__a__r__           ##: Also print the current directory which breaks if it has a newline character in its name when using the builtin cd.
+      printf '%s\n' "${PWD//$'\n'/\\n}" &&  __mcd__c__h__e__c__k__g__i__t ##: Print the current directory & run the git.
+    elif [[ ! ${options[0]} = "-" ]]; then ##: The opposite of the previous test above.
       __mcd__c__l__e__a__r__
       __mcd__c__h__e__c__k__g__i__t
     fi
   fi
 
-  return "$return_status"
+  return "$return_status" ##: Use the actual exit status of the previous executed builtin cd command.
 }
 
 mcd() {
-  shopt -s extglob
+  shopt -s extglob ##: Enable extglob just to be sure.
 
-  if (( BASH_VERSINFO[0] < 4 )); then
-    printf >&2 'This function requires bash 4.0 or newer\n'
-    return 1
+  if (( BASH_VERSINFO[0] < 4 )); then ##: If bash version is lower than 4.
+    printf >&2 'This function requires bash 4.0 or newer\n' ##: Print this error message
+    return 1 ##: Exit with an error.
   fi
 
-  declare -A _AssocDirs_ Unique
-  declare -a Dirs options RangeMessage
+  declare -A _AssocDirs_ Unique ##: Declare the Associative arrays.
+  declare -a Dirs options RangeMessage ##: Declare the Indexed arrays.
 
   local b bb dest dir dirst f gb i j k n newline PlusOne REPLY reset UniqueDirs prompts yb
 
-  if type -P tput >/dev/null; then
-    b=$(tput bold)
+  if type -P tput >/dev/null; then ##: If tput is installed load the variables for the fonts.
+    b=$(tput bold) ##: Bold font
     reset=$(tput sgr0)
-    gb=$(tput setaf 2; printf '%s' "$b")
-    bb=$(tput setaf 4; printf '%s' "$b")
-    yb=$(tput setaf 3; printf '%s' "$b")
+    gb=$(tput setaf 2; printf '%s' "$b") ##: Green Bold
+    bb=$(tput setaf 4; printf '%s' "$b") ##: Blue Bold
+    yb=$(tput setaf 3; printf '%s' "$b") ##: Yellow Bold
   fi
 
-  while (($#)); do
+  while (($#)); do ##: While there are arguments/options Loop through the arguments/options.
     case $1 in
-      --no-color|-n)
-         unset b bb gb reset yb
-         break
+      --no-color|-n) ##: If input is one of the following. (do not print colored fonts.)
+         unset b bb gb reset yb ##: unset the variables
+         break ##: break out of the loop.
          ;;
-      --about|-a)
-         ___mcd__a__b__o__u__t
+      --about|-a) ##: If input is one of the following.
+         ___mcd__a__b__o__u__t  ##: Run the about function and return from the function.
          return
          ;;
-      --clear|-c)
+      --clear|-c) ##: User ask to clear/empty the directory stack cache.
          unset ____D_i_r_S_t_a_c_k____s && __mcd__c__l__e__a__r__
          printf '%s\n' "Directory stack is now empty!"
          return
          ;;
-      --help|-h|-?)
+      --help|-h|-?) ##: User wants help/usage for the mcd function.
          ___mcd___U___s___a___g___e___
          return
          ;;
-         *)
+         *) ##: User selected an unknown option.
          ___mcd___U___s___a___g___e___ >&2
          return 1
          ;;
     esac
   done
 
-  dirst=$(pwd -P; printf x)
-  dirst=${dirst%$'\nx'}
+  dirst=$(pwd -P; printf x) ##: pwd -P prints the actual directories and the link just in case..(additional x character inside the $().)
+  dirst=${dirst%$'\nx'} ##: Remove the newline including the x.
 
-  for k in "${____D_i_r_S_t_a_c_k____s[@]}"; do
-    [[ $k = @("${PWD//$'\n'/\\n}"|$dirst) ]] && continue
-    Unique["$k"]=
+  for k in "${____D_i_r_S_t_a_c_k____s[@]}"; do ##: Loop through the directories that was recently visited.
+    [[ $k = @("${PWD//$'\n'/\\n}"|$dirst) ]] && continue ##: If directories are where you are currently skip it.
+    Unique["$k"]=  ##: Perform a Uniq test to avoid duplicate directories (Same directories that were visited more than once)
   done
-  Dirs=("${!Unique[@]}")
+  Dirs=("${!Unique[@]}") ##: Load the name of the directories. in the Dirs array.
 
   ___mcd__m__e__n__u___() {
     __mcd__c__l__e__a__r__
     printf '%s %s\n' "${yb}Current directory:$reset" "$bb${PWD//$'\n'/\\n}$reset"
-    printf '%s\n' "${empty_line+""}"
+    printf '%s\n' "${empty_line+""}" ##: Print an empty line, just in case empty_line is set print "" (using PE +$VAR sign)
     n=1
     for i; do
-      printf "$gb%3d.$reset %s\n" "$n" "$bb$i$reset"
-      _AssocDirs_["$((n++))"]="$i"
+      printf "$gb%3d.$reset %s\n" "$n" "$bb$i$reset" ##: Print the directories with numbers and with colors (the cool part ;))
+      _AssocDirs_["$((n++))"]="$i" ##: Load all the directories in the Asscociative array _AssocDirs_, doing [key]=value
     done
   }
 
-  Dirs+=("$reset${yb}Quit$reset")
-  printf -v prompts '\n%s' "$yb[${gb}1${reset}${yb}-$reset$gb${#Dirs[@]}$reset$yb] ==>$reset "
+  Dirs+=("$reset${yb}Quit$reset") ##: Add the yello bold colored Quit in the lists of options.
+  printf -v prompts '\n%s' "$yb[${gb}1${reset}${yb}-$reset$gb${#Dirs[@]}$reset$yb] ==>$reset " ##: Use printf to save the prompt in a variable.
 
-  ___mcd__m__e__n__u___ "${Dirs[@]}"
+  ___mcd__m__e__n__u___ "${Dirs[@]}" ##: Present the directories & Quit string in a fashionable way. "${Dirs[@]}" is the lists.
 
-  if (( ${#Dirs[@]} <= 9 )); then
-    options=(-r -p "$prompts" -s -n 1)
+  if (( ${#Dirs[@]} <= 9 )); then ##: Test if the total directories is less than or equal to 9.
+    options=(-r -p "$prompts" -s -n 1) ##: Enable the ONE-CLICK enter button when choosing a number.
   else
-    options=(-r -p "$prompts")
+    options=(-r -p "$prompts") ##: If more than 9 disable it so user can enter two digits or more.
   fi
 
-  read "${options[@]}"
+  read "${options[@]}" ##: Feed the options to read.
 
   case $REPLY in
-    [Qq]|[Qq][Uu][Ii][Tt]|${#Dirs[@]}|'')
+    [Qq]|[Qq][Uu][Ii][Tt]|${#Dirs[@]}|'') ##: If input is one of the following do nothing & exit the mcd function.
        __mcd__c__l__e__a__r__
        printf '%s %s\n' "${yb}Directory not changed:$reset" "$bb${PWD//$'\n'/\\n}$reset"
        return
        ;;
-    *[!0-9]*|0*)
+    *[!0-9]*|0*) ##: If input is/are not numbers then print errors and exit the mcd function with an error status.
        __mcd__c__l__e__a__r__
        printf '%s [%s]\n' "${b}Unknown response!$reset" "$gb$REPLY$reset" >&2
        return 1
        ;;
   esac
 
-  RangeMessage=("$gb$REPLY$reset" "${gb}1$reset" "$gb${#Dirs[@]}$reset")
+  RangeMessage=("$gb$REPLY$reset" "${gb}1$reset" "$gb${#Dirs[@]}$reset") ##: Load the error message in the array RangeMessage when the input is out of range.
 
-  if (( REPLY > ${#Dirs[@]} )); then
+  if (( REPLY > ${#Dirs[@]} )); then ##: Test if input is more than the total value of directories.
     __mcd__c__l__e__a__r__
-    printf "[%s] ${yb}not in range from$reset [%s-%s] \n" "${RangeMessage[@]}" >&2
+    printf "[%s] ${yb}not in range from$reset [%s-%s] \n" "${RangeMessage[@]}" >&2 ##: Exit with an error message and error status.
     return 1
   fi
 
-  for j in "${!_AssocDirs_[@]}"; do
-    [[ $REPLY = $j ]] && dest=${_AssocDirs_[$REPLY]//\\n/$'\n'}
+  for j in "${!_AssocDirs_[@]}"; do ##: If input is ok, meaning it passed the test above. loop through the directories recently visited
+    [[ $REPLY = $j ]] && dest=${_AssocDirs_[$REPLY]//\\n/$'\n'} ##: If input is a match save the input in the variable dest.
   done
+               ##: Use the cd function to actually cd to $dest.
+   cd "$dest"  ##: The testing above before the actual cd seems enough. Needs more brain in scripting to avoid deleted files. (Using the || operator)
+}              ##: Even if someone change the permission on the previous directory.
 
-  cd "$dest" || die 'Verify that you have proper permissions!'
-}
-
-__mcd__c__h__e__c__k__g__i__t() {
-  if type -P git >/dev/null; then
+__mcd__c__h__e__c__k__g__i__t() { ##: Function to check if the repository is a git repo once inside it.
+  if type -P git >/dev/null; then ##: Check if git is installed, print repo status if it is.
     git rev-parse 2>/dev/null && printf '%s\n\n' "GIT repository detected." && git status
-    return "$return_status"
+    return "$return_status" 
   fi
 }
 
-__mcd__c__l__e__a__r__() {
-  type -P clear >/dev/null && command clear
+__mcd__c__l__e__a__r__() { ##: Function to clear the screen.
+  type -P clear >/dev/null && command clear ##: Check if the clear utility is installed, run clear if it is.
 }
 
-___mcd__a__b__o__u__t() {
+___mcd__a__b__o__u__t() { ##: Function to print some info about mcd.
   __mcd__c__l__e__a__r__
   cat <<EOF
 
                             Mcd
 
-Copyright  (C)  2015 Jason V. Ferrer  '<jetchisel@opensuse.org>'
+Copyright  2015-2016 Jason V. Ferrer  '<jetchisel@opensuse.org>'
 
-A bash shell function that let's you easily navigate back to the
-currently remembered directories by providing the  corresponding
-number. It lists a menu of the currently remembered directories.
-Duplicate  directories are  discarded  in the  menu (directories
-visited more than once). When  sourced, it has it's own "cd" and
-it's own directory  stack.  (overriding the builtins.). It tries
-to work  around those  directories with  embedded newlines which
-the  builtin  "dirs" can't  handle.  If  the  "git"  utility  is
-installed the status of the git repo is printed  once inside the
-directory.
+A bash  shell function that allows the  user to easily  navigate
+back  to the currently remembered  directories by  providing the
+corresponding  number.  It  lists  a  menu   of  the   currently
+remembered  directories. Duplicate  directories  are   discarded
+in the menu (directories navigated more than once). When sourced
+it has  its own "cd" and its own directory  stack. 
+(overriding the builtins)
+
+It tries to work around directories with embedded newlines which
+the  builtin  "dirs" can't  handle  in some  cases. If the "git" 
+utility is installed the status of the git repo is printed  once 
+inside the directory.
 
 This  program is  free software;  you can redistribute it and/or
 modify  it  under  the terms  of the  GNU General Public License
@@ -197,7 +199,7 @@ GNU General Public License for more details.
 EOF
 }
 
-___mcd___U___s___a___g___e___() {
+___mcd___U___s___a___g___e___() { ##: Function to print help/usage.
   __mcd__c__l__e__a__r__
   cat <<EOF
 
@@ -220,4 +222,3 @@ inside it.
 
 EOF
 }
-
