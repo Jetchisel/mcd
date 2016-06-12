@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd [OPTIONS]...                                                          #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Sat Jun 11 09:04:49 PHT 2016 / Sat Jun 11 01:04:49 UTC 2016               #
+#: Last Edit       : Sun Jun 12 17:03:58 PHT 2016 / Sun Jun 12 09:03:58 UTC 2016               #
 #: License         : GPLv3                                                                     #
-#: Version         : 2.0.11                                                                    #
+#: Version         : 2.1.0                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A shell function that allows user to navigate to the previous directories #
 #: Options         : [-a|--about] [-c|--clear] [-h|--help] [-n|--no-color]                     #
@@ -21,7 +21,7 @@ cd() {
     [[ ! -d $f ]] && options+=("$f") 
     [[ -d $f ]] && directory+=("$f") 
   done
-
+  
   if (( ${#options[@]} && ${#directory[@]} )); then 
     builtin cd "${options[@]}" "$directory" && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}") 
   elif (( ! ${#options[@]} && ${#directory[@]} )); then 
@@ -58,7 +58,7 @@ mcd() {
   declare -A _AssocDirs_ Unique 
   declare -a Dirs options RangeMessage 
 
-  local b bb dest dir dirst f gb i j k n newline PlusOne REPLY reset UniqueDirs prompts yb
+  local b bb dest empty_line dirst f gb i j k n REPLY reset prompts yb
 
   if type -P tput >/dev/null; then 
     b=$(tput bold) 
