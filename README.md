@@ -8,7 +8,7 @@ A bash shell function that allows user to navigate to the previous directories.
 Duplicate directories are discarded in the menu (directories visited more than once).
 When sourced, it has its own "cd" and its own directory stack. (overriding the bui-
 ltins.). It tries to work around those directories with embedded newlines  which  the
-builtin "dirs" can't handle in some cases. If the "git" utility is installed, 
+builtin "dirs" can't handle in some cases. If the "git" utility is installed,
 the status of the git repo is printed once inside the directory.
 
 ## Requirements
