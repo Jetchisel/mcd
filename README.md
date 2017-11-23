@@ -2,7 +2,7 @@
 
 https://github.com/Jetchisel/mcd
 
-Copyright 2015-2016 Jetchisel
+Copyright 2015-2017 Jetchisel
 
 A bash shell function that allows user to navigate to the previous directories.
 Duplicate directories are discarded in the menu (directories visited more than once).
@@ -10,6 +10,7 @@ When sourced, it has its own "cd" and its own directory stack. (overriding the b
 ltins.). It tries to work around those directories with embedded newlines  which  the
 builtin "dirs" can't handle in some cases. If the "git" utility is installed,
 the status of the git repo is printed once inside the directory.
+With or without autocd enabled by using 'shopt -s autocd' in interacvie mode.
 
 ## Requirements
 * Bash version 4 and newer is a must because of Associative arrays.
@@ -21,8 +22,16 @@ the status of the git repo is printed once inside the directory.
 * or just download the zip archive and unpack it.
 
 ## Usage: A simple test run once you have sourced mcd.
+
 ```shell
 for f in /*/; do [[ -x $f ]] && cd "$f"; done
+```
+
+## With autocd enabled simply running/typing the directory.
+```shell
+/run/media
+/etc/ssh
+/usr/lib
 ```
 
 Now run mcd to see the lists of recently visited directories. Press the correct number in the menu.

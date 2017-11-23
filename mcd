@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd [OPTIONS]...                                                          #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Sun Jun 12 17:03:58 PHT 2016 / Sun Jun 12 09:03:58 UTC 2016               #
+#: Last Edit       : Thu 23 Nov 2017 12:03:16 PM +08  /  Thu Nov 23 04:03:16 UTC 2017          #
 #: License         : GPLv3                                                                     #
-#: Version         : 2.1.0                                                                     #
+#: Version         : 3.0                                                                       #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A shell function that allows user to navigate to the previous directories #
 #: Options         : [-a|--about] [-c|--clear] [-h|--help] [-n|--no-color]                     #
@@ -33,6 +33,7 @@ cd() {
   fi
 
   return_status=$?
+
 
   if (( ! return_status )); then
     if [[ ${options[0]} = "-" ]]; then
@@ -152,7 +153,9 @@ mcd() {
     [[ $REPLY = $j ]] && dest=${_AssocDirs_[$REPLY]//\\n/$'\n'}
   done
 
-   cd "$dest"
+  cd "$dest"
+
+
 }
 
 __mcd__c__h__e__c__k__g__i__t() {
@@ -172,20 +175,19 @@ ___mcd__a__b__o__u__t() {
 
                             Mcd
 
-Copyright  2015-2016 Jason V. Ferrer  '<jetchisel@opensuse.org>'
+Copyright  2015-2017 Jason V. Ferrer  '<jetchisel@opensuse.org>'
 
 A bash  shell function that allows the  user to easily  navigate
 back  to the currently remembered  directories by  providing the
-corresponding  number.  It  lists  a  menu   of  the   currently
-remembered  directories. Duplicate  directories  are   discarded
-in the menu (directories navigated more than once). When sourced
-it has  its own "cd" and its own directory  stack.
-(overriding the builtins)
+corresponding  number, with or without autocd enabled.  It lists
+a  menu  of  the  currently  remembered   directories. Duplicate
+directories are discarded  in the menu.  When sourced it has its
+own "cd" and its own directory  stack. (overriding the builtins)
 
 It tries to work around directories with embedded newlines which
 the  builtin  "dirs" can't  handle  in some  cases. If the "git"
 utility is installed the status of the git repo is printed  once
-inside the directory.
+inside the directory/repository.
 
 This  program is  free software;  you can redistribute it and/or
 modify  it  under  the terms  of the  GNU General Public License
@@ -206,7 +208,8 @@ ___mcd___U___s___a___g___e___() {
 Usage: mcd [OPTIONS]...
 
 Navigate  back  to  the currently   remembered   directories  by
-providing the corresponding number in the menu.
+providing the  corresponding number in the menu. With or without
+autocd enabled.
 
 Options:
   -a, --about      Show a brief info about mcd.
@@ -218,7 +221,26 @@ Options:
 Without an option  and if the  "tput" utility  is  installed, by
 default  the fonts are bold  and  colored. If the  "git" utility
 is installed  the status  of the git  repository is printed once
-inside it.
+inside the directory/repository.
 
 EOF
 }
+
+
+__a_u_t_o_c_d__() {
+  local IFS ___recent_history___ ___regexp___
+
+  if shopt -q autocd; then
+    IFS= read -u6 -r ___recent_history___ 6< <(history 1)
+    ___regexp___='[[:space:]]+([[:digit:]]+)[[:space:]]+([[:digit:]]+)[[:space:]](.+)'
+
+    if [[ $___recent_history___ =~ $___regexp___ ]]; then
+      [[ ${BASH_REMATCH[3]} = ${PWD//$'\n'/\\n} ]] && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
+    fi
+  fi
+}
+
+
+if [[ $PROMPT_COMMAND != *__a_u_t_o_c_d__* ]]; then
+    PROMPT_COMMAND+="__a_u_t_o_c_d__"
+fi
