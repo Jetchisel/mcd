@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd [OPTIONS]...                                                          #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Sat 02 Dec 2017 15:39:38 PM +08  /  Sat Dec  2 07:39:38 UTC 2017          #
+#: Last Edit       : Sun 04 Feb 2018 20:13:07 PM +08  /  Sun Feb  4 12:13:07 UTC 2018          #
 #: License         : GPLv3                                                                     #
-#: Version         : 3.0                                                                       #
+#: Version         : 3.2.0                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A shell function that allows user to navigate to the previous directories #
 #: Options         : [-a|--about] [-c|--clear] [-h|--help] [-n|--no-color]                     #
@@ -68,6 +68,7 @@ mcd() {
     bb=$(tput setaf 4; printf '%s' "$b")
     yb=$(tput setaf 3; printf '%s' "$b")
   fi
+
 
   while (($#)); do
     case $1 in
@@ -175,7 +176,7 @@ ___mcd__a__b__o__u__t() {
 
                             Mcd
 
-Copyright  2015-2017 Jason V. Ferrer  '<jetchisel@opensuse.org>'
+Copyright  2015-2018 Jason V. Ferrer  '<jetchisel@opensuse.org>'
 
 A bash  shell function that allows the  user to easily  navigate
 back  to the currently remembered  directories by  providing the
@@ -228,14 +229,22 @@ EOF
 
 
 __a_u_t_o_c_d__() {
-  local IFS ___recent_history___ ___regexp___
+  local IFS recent_history regexp
 
   if shopt -q autocd; then
-    IFS= read -u6 -r ___recent_history___ 6< <(history 1)
-    ___regexp___='[[:space:]]+([[:digit:]]+)[[:space:]]+([[:digit:]]+)[[:space:]](.+)'
+    case $HISTTIMEFORMAT in
+      "%s ")
+        regexp='[[:space:]]+[[:digit:]]+[[:space:]]+[[:digit:]]+[[:space:]](.+)'
+        ;;
+      '')
+        regexp='[[:space:]]+[[:digit:]]+[[:space:]]+(.+)'
+        ;;
+    esac
 
-    if [[ $___recent_history___ =~ $___regexp___ ]]; then
-      [[ ${BASH_REMATCH[3]} = ${PWD//$'\n'/\\n} ]] && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
+    IFS= read -u6 -r recent_history 6< <(history 1)
+
+    if [[ $recent_history =~ $regexp ]]; then
+      [[ ${BASH_REMATCH[1]} = ${PWD//$'\n'/\\n} ]] && ____D_i_r_S_t_a_c_k____s+=("${PWD//$'\n'/\\n}")
     fi
   fi
 }
