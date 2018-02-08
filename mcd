@@ -2,9 +2,9 @@
 #: Title           : mcd                                                                       #
 #: Sypnosis        : mcd [OPTIONS]...                                                          #
 #: Date Created    : Wed Feb 11 19:04:04 PHT 2015 / Wed Feb 11 11:04:04 UTC 2015               #
-#: Last Edit       : Tue 06 Feb 2018 15:46:37 PM +08  /  Tue Feb  6 07:46:37 UTC 2018          #
+#: Last Edit       : Fri 09 Feb 2018 01:40:17 AM +08  /  Thu Feb  8 17:40:17 UTC 2018          #
 #: License         : GPLv3                                                                     #
-#: Version         : 3.4.1                                                                     #
+#: Version         : 3.4.2                                                                     #
 #: Author          : Jason V. Ferrer '<jetchisel@opensuse.org>'                                #
 #: Description     : A shell function that allows user to navigate to the previous directories #
 #: Options         : [-a|--about] [-c|--clear] [-h|--help] [-n|--no-color]                     #

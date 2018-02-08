@@ -2,7 +2,7 @@
 
 https://github.com/Jetchisel/mcd
 
-Copyright 2015-2017 Jetchisel
+Copyright 2015-2018 Jetchisel
 
 A bash shell function that allows user to navigate to the previous directories.
 Duplicate directories are discarded in the menu (directories visited more than once).
@@ -27,13 +27,19 @@ With or without autocd enabled by using 'shopt -s autocd' in interacvie mode.
 for f in /*/; do [[ -x $f ]] && cd "$f"; done
 ```
 
-## With autocd enabled simply running/typing the directory.
+## With autocd enabled 'shopt -s autocd' simply running/typing the directory.
 ```shell
+/bin
+/boot
+/mnt
 /run/media
 /etc/ssh
 /usr/lib
 ```
-
+### or by doing the test run with 'shopt -s autocd' enabled.
+```
+for f in /*/; do [[ -x $f ]] && "$f"; done
+```
 Now run mcd to see the lists of recently visited directories. Press the correct number in the menu.
 ```shell
 mcd
